@@ -1,22 +1,32 @@
-from django.conf import settings
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 
-# Images descriptions
-from django.views.generic.list import ListView
-from django.views.generic.detail import DetailView
-from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
-from django.urls import reverse_lazy
+def signup_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Account created successfully!')
+            return redirect('signin')
+    else:
+        form = UserCreationForm()
+    return render(request, 'auth/signup.html', {'form': form})
 
-from django.contrib.auth.views import LoginView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login
+def signin_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            messages.success(request, 'Signed in successfully!')
+            return redirect('home')  
+    else:
+        form = AuthenticationForm()
+    return render(request, 'auth/signin.html', {'form': form})
 
-# Imports for Reordering Feature
-from django.views import View
-from django.shortcuts import redirect
-from django.db import transaction
+def signout_view(request):
+    logout(request)
+    messages.success(request, 'Signed out successfully!')
+    return redirect('signin')  
